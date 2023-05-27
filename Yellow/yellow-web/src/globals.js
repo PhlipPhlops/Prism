@@ -1,0 +1,1 @@
+export const brain_uri = "http://localhost:8080"
