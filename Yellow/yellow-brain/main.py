@@ -3,6 +3,8 @@ import os
 from flask import Flask, request
 from flask_cors import CORS
 
+import openai
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,11 +26,21 @@ def hello_world():
 
 @app.route("/call", methods=["POST"])
 def call():
-    """Example Hello World route."""
-    # grab the text from the request body
+    """This forwards the text to openai completion endpoint and forwards stream back to the user"""
     text = request.get_json()["text"]
 
-    return f"You rang? ;) {text}!"
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Respond in under 25 words, always"},
+            {"role": "user", "content": text},
+        ],
+        temperature=0,
+        stream=True,  # this time, we set stream=True
+    )
+
+    for chunk in response:
+        yield (chunk)
 
 
 if __name__ == "__main__":
