@@ -7,7 +7,6 @@ ENV PYTHONUNBUFFERED True
 
 ### Other env variables
 ENV FLASK_APP main
-ENV NAME "my guy :3"
 
 # Copy local code to the container image.
 ENV APP_HOME /app

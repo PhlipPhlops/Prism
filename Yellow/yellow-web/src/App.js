@@ -1,48 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
-import { useEffect, useState } from 'react';
-import { brain_uri } from './globals';
+import ChatFields from './ChatFields'
+import styled from 'styled-components';
+import { useEffect } from 'react';
 
 function App() {
 
-  const [brainText, setBrainText] = useState(`Edit!! <code>src/App.js</code> and save to reload.`)
-
+  // Set the theme color so it looks like a unified color on ios
   useEffect(() => {
-    const fetchBrainText = async () => {
-      try {
-        let resp = await fetch(`${brain_uri}/`)
-        if (!resp.ok) {
-          throw new Error(`HTTP error! status: ${resp.status}`);
-        }
-        setBrainText(await resp.text())
-      } catch (e) {
-        console.error(`brain_uri: ${brain_uri}`)
-        console.error(e)
-      }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    // Create a new tag if doesn't exist
+    if (!meta) {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'theme-color';
+      // Set the color
+      newMeta.content = '#ffff00'; // yellow
+      document.getElementsByTagName('head')[0].appendChild(newMeta);
+    } else {
+      // Change the color if the tag already exists
+      meta.setAttribute('content', '#ffff00'); // yellow
     }
-    fetchBrainText()
-  }, [])
+  }, []);
 
-  console.log(`brainText: ${brainText}`)
-
+  // Inject metatags to prevent unwanted zooming on mobile devices
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+    meta.setAttribute('name', 'viewport');
+    document.getElementsByTagName('head')[0].appendChild(meta);
+  })
+    
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          {brainText}
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <StyledApp>
+      <Spacer/>
+      <ChatFields/>
+    </StyledApp>
   );
 }
 
 export default App;
+
+const StyledApp = styled.div`
+  /* text-align: center; */
+  /* background-color: #282c34; */
+  background-color: yellow;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* justify-content: center; */
+  font-size: calc(10px + 2vmin);
+  color: black;
+`
+
+const Spacer = styled.div`
+  height: 1vh;
+`
