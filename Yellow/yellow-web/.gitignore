@@ -30,4 +30,5 @@ yarn-error.log*
 __pycache__/
 */.venv/
 .venv/
+Yellow/yellow-brain/.venv/
 .env
