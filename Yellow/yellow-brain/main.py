@@ -3,6 +3,14 @@ import os
 from flask import Flask, request
 from flask_cors import CORS
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ELEVEN_LABS_API_KEY = os.environ.get("ELEVEN_LABS_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+OPENAI_ORG_ID = os.environ.get("OPENAI_ORG_ID")
+
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
 
