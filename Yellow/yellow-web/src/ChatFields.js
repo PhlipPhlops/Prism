@@ -22,7 +22,32 @@ function ChatFields() {
       if (!resp.ok) {
         throw new Error(`HTTP error! status: ${resp.status}`);
       }
-      setGeneratedText(await resp.text());
+
+
+      const reader = resp.body.getReader();
+      let chunks = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          console.log("Stream complete");
+          break;
+        }
+        chunks += new TextDecoder("utf-8").decode(value);
+        setGeneratedText(chunks);
+        
+        // // You may want to process chunks here
+        // // For instance, if your server is streaming JSON objects separated by newline
+        // // You can check if there is a complete JSON object in the chunks string,
+        // // parse it and then remove it from the string
+        // const newlineIndex = chunks.indexOf('\n');
+        // if (newlineIndex !== -1) {
+        //   const message = JSON.parse(chunks.slice(0, newlineIndex));
+        //   chunks = chunks.slice(newlineIndex + 1);
+        //   // Now you can do something with the message
+        //   console.log(message);
+        // }
+      }
+
       // do something with the response data here if necessary
     } catch (e) {
       console.error(`brain_uri: ${brain_uri}`);

@@ -1,6 +1,7 @@
 import os
+import json
 
-from flask import Flask, request
+from flask import Flask, request, Response
 from flask_cors import CORS
 
 import openai
@@ -27,7 +28,12 @@ def hello_world():
 @app.route("/call", methods=["POST"])
 def call():
     """This forwards the text to openai completion endpoint and forwards stream back to the user"""
-    text = request.get_json()["text"]
+    data = request.get_json()
+    if not data:
+        return "No data provided to payload body", 400
+    text = data.get("text")
+    if not text:
+        return "No text field provided in payload data", 400
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -39,8 +45,22 @@ def call():
         stream=True,  # this time, we set stream=True
     )
 
-    for chunk in response:
-        yield (chunk)
+    def generate():
+        # create variables to collect the stream of chunks
+        collected_chunks = []
+        collected_messages = []
+        # iterate through the stream of events
+        for chunk in response:
+            collected_chunks.append(chunk)  # save the event response
+            chunk_message = chunk["choices"][0]["delta"]
+            # check if chunk_message has "content" key
+            if "content" in chunk_message:
+                message = chunk_message["content"]
+                collected_messages.append(message)  # save the message
+                print(message)
+                yield message  # yield the message to the client
+
+    return Response(generate(), mimetype="application/json")
 
 
 if __name__ == "__main__":
