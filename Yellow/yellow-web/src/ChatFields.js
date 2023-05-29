@@ -7,6 +7,10 @@ function ChatFields() {
   const [inputText, setInputText] = useState(``);
   const [generatedText, setGeneratedText] = useState(``)
 
+  const fetchSpeak = async (text) => {
+
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -32,20 +36,27 @@ function ChatFields() {
           console.log("Stream complete");
           break;
         }
-        chunks += new TextDecoder("utf-8").decode(value);
-        setGeneratedText(chunks);
-        
-        // // You may want to process chunks here
-        // // For instance, if your server is streaming JSON objects separated by newline
-        // // You can check if there is a complete JSON object in the chunks string,
-        // // parse it and then remove it from the string
-        // const newlineIndex = chunks.indexOf('\n');
-        // if (newlineIndex !== -1) {
-        //   const message = JSON.parse(chunks.slice(0, newlineIndex));
-        //   chunks = chunks.slice(newlineIndex + 1);
-        //   // Now you can do something with the message
-        //   console.log(message);
-        // }
+
+        // Look here to split the incoming values based on the key they contain
+        console.log("Chunk received")
+        console.log(new TextDecoder("utf-8").decode(value));
+        let string_value = new TextDecoder("utf-8").decode(value)
+        // sometimes we get multiple jsons strings in one chunk
+        // like "{a:b}{c:d}", so we split on the "}{" just in case
+        // first we insert a newline between the two jsons
+        string_value = string_value.replace("}{", "}\n{")
+        // then we split on the newline
+        let json_strings = string_value.split("\n")
+
+        for (let i = 0; i < json_strings.length; i++) {
+          let chunk = JSON.parse(json_strings[i])
+          if (Object.keys(chunk).includes("content")) {
+            chunks += chunk["content"];
+          } else if (Object.keys(chunk).includes("sentence")) {
+            fetchSpeak(chunk["sentence"])
+          }
+          setGeneratedText(chunks);
+        }
       }
 
       // do something with the response data here if necessary
@@ -71,4 +82,5 @@ let FormColumn = styled.form`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
 `

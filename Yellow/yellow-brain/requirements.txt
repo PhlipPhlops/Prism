@@ -13,10 +13,13 @@ gunicorn==20.1.0
 idna==3.4
 itsdangerous==2.1.2
 Jinja2==3.1.2
+joblib==1.2.0
 MarkupSafe==2.1.2
 multidict==6.0.4
+nltk==3.8.1
 openai==0.27.7
 python-dotenv==1.0.0
+regex==2023.5.5
 requests==2.31.0
 six==1.16.0
 tqdm==4.65.0

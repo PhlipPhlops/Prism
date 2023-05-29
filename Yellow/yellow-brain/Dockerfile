@@ -20,5 +20,8 @@ RUN chmod +x /start.sh
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Download the NLTK "punkt" package
+RUN python -m nltk.downloader punkt
+
 # Run the start script
 CMD ["/start.sh"]
