@@ -1,12 +1,23 @@
 import { useEffect, useState } from 'react';
 import { brain_uri, yellow_color } from './globals';
 import styled from 'styled-components';
-
+import WebcamComponent from './WebcamComponent';
 
 class AudioQueue {
+  // Current failures:
+  // Sometimes the audio plays out of order (leverage the index of the audio in the queue to work around)
+  // Because a new audio object is being instantiated every time, iOS doesn't allow it to play automatically
   constructor() {
     this.queue = []
     this.playing = false
+    this.audioChannel = new Audio()
+  }
+
+  giveAudioPermission() {
+    // This is a hack to get around the fact that iOS doesn't allow audio to play automatically
+    // Should be called once on a user interaction, like a button click
+    // and should grant the audio channel playback permission
+    this.audioChannel.play();
   }
 
   async playQueue() {
@@ -21,13 +32,16 @@ class AudioQueue {
     this.isPlaying = false
   }
 
-  playAudio(audio) {
+  playAudio(audioBlobUrl) {
     return new Promise(res=>{
-      audio.play()
-      audio.onended = res
+      // swap in audioBlobUrl for audio.src
+      this.audioChannel.src = audioBlobUrl
+
+      this.audioChannel.play()
+      this.audioChannel.onended = res
     }) 
   }
-  
+
 
   enqueue(audio) {
     this.queue.push(audio)
@@ -43,13 +57,21 @@ class AudioQueue {
   }
 }
 
-
 function ChatFields() {
 
   const [inputText, setInputText] = useState(``);
   const [generatedText, setGeneratedText] = useState(``)
   const [playVoice, setPlayVoice] = useState(true)
+  
+  const [isAudioPermissionGiven, setIsAudioPermissionGiven] = useState(false);
   const audioQueue = new AudioQueue()
+
+  const giveAudioPermission = () => {
+    // play silent audio
+    console.log("attempting to give audio permission")
+    audioQueue.giveAudioPermission()
+    setIsAudioPermissionGiven(true);
+  }
 
   useEffect(() => {
     // Calculate the initial viewport height
@@ -96,9 +118,8 @@ function ChatFields() {
       const blob = new Blob(chunks, {
         type: 'audio/mpeg'
       });
-      const audio = new Audio(URL.createObjectURL(blob));
-      console.log("playing audio")
-      audioQueue.enqueue(audio)
+      const audioBlobUrl = URL.createObjectURL(blob)
+      audioQueue.enqueue(audioBlobUrl)
 
     } catch (e) {
       console.error(e);
@@ -160,21 +181,24 @@ function ChatFields() {
   };
 
   return (
-    <FormColumn onSubmit={handleSubmit}>
-      <ScrollableDiv>
-        <TextSpan>{generatedText}</TextSpan>
-      </ScrollableDiv>
-      <Row>
-        <InputContainer>
-            <textarea value={inputText} onChange={e => setInputText(e.target.value)} />
-            <button type="submit">Submit</button>
-            <span>
-              <input type="checkbox" checked={playVoice} onChange={() => setPlayVoice(!playVoice)} />
-               with voice
-            </span>
-        </InputContainer>
-      </Row>
-    </FormColumn>
+    <>
+      <WebcamComponent />
+      <FormColumn onSubmit={handleSubmit}>
+        <ScrollableDiv>
+          <TextSpan>{generatedText}</TextSpan>
+        </ScrollableDiv>
+        <Row>
+          <InputContainer>
+              <textarea value={inputText} onChange={e => setInputText(e.target.value)} />
+              <button type="submit" onClick={() => giveAudioPermission()} >Submit</button>
+              <span>
+                <input type="checkbox" checked={playVoice} onChange={() => setPlayVoice(!playVoice)} />
+                with voice
+              </span>
+          </InputContainer>
+        </Row>
+      </FormColumn>
+    </>
   );
 }
 
