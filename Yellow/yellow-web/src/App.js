@@ -1,6 +1,7 @@
 import ChatFields from './ChatFields'
 import styled from 'styled-components';
 import { useEffect } from 'react';
+import { yellow_color } from './globals';
 
 function App() {
 
@@ -12,11 +13,11 @@ function App() {
       const newMeta = document.createElement('meta');
       newMeta.name = 'theme-color';
       // Set the color
-      newMeta.content = '#ffff00'; // yellow
+      newMeta.content = yellow_color; // yellow
       document.getElementsByTagName('head')[0].appendChild(newMeta);
     } else {
       // Change the color if the tag already exists
-      meta.setAttribute('content', '#ffff00'); // yellow
+      meta.setAttribute('content', yellow_color); // yellow
     }
   }, []);
 
@@ -41,7 +42,7 @@ export default App;
 const StyledApp = styled.div`
   /* text-align: center; */
   /* background-color: #282c34; */
-  background-color: yellow;
+  background-color: ${yellow_color};
   min-height: 100vh;
   display: flex;
   flex-direction: column;
