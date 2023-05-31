@@ -48,6 +48,7 @@ function ChatFields() {
 
   const [inputText, setInputText] = useState(``);
   const [generatedText, setGeneratedText] = useState(``)
+  const [playVoice, setPlayVoice] = useState(true)
   const audioQueue = new AudioQueue()
 
   useEffect(() => {
@@ -144,7 +145,9 @@ function ChatFields() {
           if (Object.keys(chunk).includes("content")) {
             chunks += chunk["content"];
           } else if (Object.keys(chunk).includes("sentence")) {
-            fetchSpeak(chunk["sentence"])
+            if (playVoice) {
+              fetchSpeak(chunk["sentence"])
+            }
           }
           setGeneratedText(chunks);
         }
@@ -161,10 +164,16 @@ function ChatFields() {
       <ScrollableDiv>
         <TextSpan>{generatedText}</TextSpan>
       </ScrollableDiv>
-      <InputContainer>
-        <textarea value={inputText} onChange={e => setInputText(e.target.value)} />
-        <button type="submit">Submit</button>
-      </InputContainer>
+      <Row>
+        <InputContainer>
+            <textarea value={inputText} onChange={e => setInputText(e.target.value)} />
+            <button type="submit">Submit</button>
+            <span>
+              <input type="checkbox" checked={playVoice} onChange={() => setPlayVoice(!playVoice)} />
+               with voice
+            </span>
+        </InputContainer>
+      </Row>
     </FormColumn>
   );
 }
@@ -189,6 +198,13 @@ let FormColumn = styled.form`
     padding-top: calc(env(safe-area-inset-top) + 15px); /* Adds some space around the text */
     padding: 20px; /* Reduces the padding on smaller screens */
   }
+`
+
+let Row = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 `
 
 let TextSpan = styled.span`
