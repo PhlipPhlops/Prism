@@ -19,7 +19,7 @@ const WebcamComponent = () => {
     };
   
     return (
-      <div class="z-50">
+      <div className="z-50">
         {webcamEnabled ? (
           <Draggable>
             <Resizable width={webcamSize.width} height={webcamSize.height} onResize={handleResize}>

@@ -139,6 +139,7 @@ def call():
                         "index": num_sentences - 1,
                     }
                 )
+                return
 
             chunk_message = chunk["choices"][0]["delta"]
             # check if chunk_message has "content" key

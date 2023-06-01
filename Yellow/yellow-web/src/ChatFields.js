@@ -3,7 +3,7 @@ import { brain_uri, yellow_color } from './globals';
 import styled from 'styled-components';
 import WebcamComponent from './WebcamComponent';
 
-class AudioQueue {
+class VoiceQueue {
   // Current failures:
   // Sometimes the audio plays out of order (leverage the index of the audio in the queue to work around)
   // Because a new audio object is being instantiated every time, iOS doesn't allow it to play automatically
@@ -55,41 +55,10 @@ class AudioQueue {
   isEmpty() {
     return this.queue.length === 0
   }
-}
 
-function ChatFields() {
-
-  const [inputText, setInputText] = useState(``);
-  const [generatedText, setGeneratedText] = useState(``)
-  const [playVoice, setPlayVoice] = useState(true)
-  
-  const [isAudioPermissionGiven, setIsAudioPermissionGiven] = useState(false);
-  const audioQueue = new AudioQueue()
-
-  const giveAudioPermission = () => {
-    // play silent audio
-    console.log("attempting to give audio permission")
-    audioQueue.giveAudioPermission()
-    setIsAudioPermissionGiven(true);
-  }
-
-  useEffect(() => {
-    // Calculate the initial viewport height
-    const vh = window.innerHeight * 0.01;
-    // Set the CSS variable to the initial height
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-
-    // Add a listener to the resize event
-    window.addEventListener('resize', () => {
-      // Recalculate the viewport height after a resize
-      const vh = window.innerHeight * 0.01;
-      // Update the CSS variable
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-    });
-  }, []);
-
-  const fetchSpeak = async (text) => {
+  fetchSpeak = async (text, index=0) => {
     console.log("fetching speak for text: " + text)
+    console.log("fetching speak for index: " + index)
     try {
       let resp = await fetch(`${brain_uri}/speak`, {
         method: 'POST',
@@ -119,12 +88,44 @@ function ChatFields() {
         type: 'audio/mpeg'
       });
       const audioBlobUrl = URL.createObjectURL(blob)
-      audioQueue.enqueue(audioBlobUrl)
+      this.enqueue(audioBlobUrl)
 
     } catch (e) {
       console.error(e);
     }
   }
+}
+
+function ChatFields() {
+
+  const [inputText, setInputText] = useState(``);
+  const [generatedText, setGeneratedText] = useState(``)
+  const [playVoice, setPlayVoice] = useState(true)
+  
+  const [isAudioPermissionGiven, setIsAudioPermissionGiven] = useState(false);
+  const voiceQueue = new VoiceQueue()
+
+  const giveAudioPermission = () => {
+    // play silent audio
+    console.log("attempting to give audio permission")
+    voiceQueue.giveAudioPermission()
+    setIsAudioPermissionGiven(true);
+  }
+
+  useEffect(() => {
+    // Calculate the initial viewport height
+    const vh = window.innerHeight * 0.01;
+    // Set the CSS variable to the initial height
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+    // Add a listener to the resize event
+    window.addEventListener('resize', () => {
+      // Recalculate the viewport height after a resize
+      const vh = window.innerHeight * 0.01;
+      // Update the CSS variable
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    });
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -162,12 +163,13 @@ function ChatFields() {
         let json_strings = string_value.split("\n")
 
         for (let i = 0; i < json_strings.length; i++) {
+          console.log("json string: " + json_strings[i])
           let chunk = JSON.parse(json_strings[i])
           if (Object.keys(chunk).includes("content")) {
             chunks += chunk["content"];
           } else if (Object.keys(chunk).includes("sentence")) {
             if (playVoice) {
-              fetchSpeak(chunk["sentence"])
+              voiceQueue.fetchSpeak(chunk["sentence"], chunk["index"])
             }
           }
           setGeneratedText(chunks);
