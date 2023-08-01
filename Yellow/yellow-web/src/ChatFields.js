@@ -35,7 +35,7 @@ class VoiceQueue {
   playAudio(audioBlobUrl) {
     return new Promise(res=>{
       // swap in audioBlobUrl for audio.src
-      this.audioChannel.src = audioBlobUrl
+      this.audioChannel.src = audioBlobUrl // ERROR: operation aborted?
 
       this.audioChannel.play()
       this.audioChannel.onended = res
@@ -56,8 +56,11 @@ class VoiceQueue {
     return this.queue.length === 0
   }
 
-  fetchSpeak = async (text, index=0) => {
-    console.log("fetching speak for text: " + text)
+  /**
+   * @param {{ sentence: string, index: number }} sentenceItem
+   */
+  fetchSpeak = async ({sentence, index}) => {
+    console.log("fetching speak for text: " + sentence)
     console.log("fetching speak for index: " + index)
     try {
       let resp = await fetch(`${brain_uri}/speak`, {
@@ -66,7 +69,7 @@ class VoiceQueue {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          text: text
+          text: sentence
         })
       });
       if (!resp.ok) {
@@ -164,12 +167,20 @@ function ChatFields() {
 
         for (let i = 0; i < json_strings.length; i++) {
           console.log("json string: " + json_strings[i])
-          let chunk = JSON.parse(json_strings[i])
+          let chunk = {}
+          try {
+            chunk = JSON.parse(json_strings[i])
+          } catch (e) {
+            console.error(e)
+            console.error("json string: " + json_strings[i])
+            throw e
+          }
           if (Object.keys(chunk).includes("content")) {
             chunks += chunk["content"];
           } else if (Object.keys(chunk).includes("sentence")) {
+            const sentenceItem = chunk
             if (playVoice) {
-              voiceQueue.fetchSpeak(chunk["sentence"], chunk["index"])
+              voiceQueue.fetchSpeak(sentenceItem)
             }
           }
           setGeneratedText(chunks);

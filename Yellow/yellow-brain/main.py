@@ -139,7 +139,7 @@ def call():
                         "index": num_sentences - 1,
                     }
                 )
-                return
+                return to_bytes({"sentence": "", "index": -1})
 
             chunk_message = chunk["choices"][0]["delta"]
             # check if chunk_message has "content" key
