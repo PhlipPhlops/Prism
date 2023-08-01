@@ -9,6 +9,9 @@ from flask_cors import CORS
 import openai
 from nltk.tokenize import sent_tokenize
 
+from twilio.twiml.messaging_response import MessagingResponse
+from twilio.twiml.voice_response import VoiceResponse
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -98,6 +101,52 @@ def speak():
         return "No text field provided in payload data", 400
 
     return Response(get_elevenlabs_reading(text), mimetype="audio/mpeg")
+
+
+@app.route("/sms", methods=['GET', 'POST'])
+def sms_reply(request):
+    """Respond to incoming calls with a simple text message."""
+    # Start our TwiML response
+    resp = MessagingResponse()
+
+    text = request.body.Body
+    if not text:
+        return "No text field provided in payload data", 400
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": jarvis_prompt,
+            },
+            {"role": "user", "content": text},
+        ],
+        temperature=0,
+    )
+
+    # Add a message
+    resp.message(response.choices[0].text)
+
+    return str(resp)
+
+@app.route("/voice", methods=['GET', 'POST'])
+def voice_reply():
+    """Respond to incoming calls with a simple text message."""
+    # Start our TwiML response
+    response = VoiceResponse()
+    response.play('https://docs.google.com/file/d/0B-klwLEjaXWcZHR5SmJJWEwtYnc/edit?pli=1&resourcekey=0-D33DYWMxjVde0g1m7qsoZw')
+
+    return str(response)
+
+@app.route("/voice2", methods=['GET', 'POST'])
+def voice_reply():
+    """Respond to incoming calls with a simple text message."""
+    # Start our TwiML response
+    response = VoiceResponse()
+    response.play('https://api.twilio.com/cowbell.mp3')
+
+    return str(response)
 
 
 @app.route("/call", methods=["POST"])
