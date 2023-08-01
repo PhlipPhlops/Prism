@@ -1,5 +1,6 @@
 // Download the helper library from https://www.twilio.com/docs/node/install
 // Find your Account SID and Auth Token at twilio.com/console
+
 // and set the environment variables. See http://twil.io/secure
 const dotenv = require('dotenv');
 dotenv.config();
@@ -16,4 +17,4 @@ client.messages
      from: process.env.TWILIO_PHONE_NUMBER,
      to: process.env.PERSONAL_PHONE_NUMBER
    })
-  .then(message => console.log(message.sid));
+  .then(message => console.log(message));
